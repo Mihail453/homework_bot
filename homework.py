@@ -44,9 +44,9 @@ def check_tokens():
     missing_tokens = [name for name, value in required_tokens.items() if not value]
 
     if missing_tokens:
+        text = "Отсутствуют обязательные переменные окружения:"
         logging.critical(
-            f"Отсутствуют обязательные переменные окружения: {', '.join(
-                missing_tokens)}")
+            f"{text} {', '.join(missing_tokens)}")
         return False
     return True
 
