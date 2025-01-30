@@ -41,7 +41,8 @@ def check_tokens():
         'TELEGRAM_CHAT_ID': TELEGRAM_CHAT_ID
     }
 
-    missing_tokens = [name for name, value in required_tokens.items() if not value]
+    missing_tokens = [
+        name for name, value in required_tokens.items() if not value]
 
     if missing_tokens:
         text = "Отсутствуют обязательные переменные окружения:"
@@ -52,6 +53,7 @@ def check_tokens():
 
 
 def send_message(bot, message):
+    """Отправляет сообщение."""
     try:
         bot.send_message(TELEGRAM_CHAT_ID, message)
         logging.debug(f"✅ Сообщение отправлено: {message}")
@@ -62,6 +64,7 @@ def send_message(bot, message):
 
 
 def get_api_answer(bot, timestamp):
+    """Проверяет корректность ответа API."""
     params = {"from_date": timestamp}
     try:
         response = requests.get(ENDPOINT, headers=HEADERS, params=params)
@@ -76,6 +79,7 @@ def get_api_answer(bot, timestamp):
 
 
 def check_response(response):
+    """Проверяет корректность ответа API."""
     if not response:
         logging.error("❌ Пустой ответ API")
         return None
@@ -91,6 +95,7 @@ def check_response(response):
 
 
 def parse_status(bot, homework):
+    """Проверяет корректность статуса."""
     status = homework.get('status')
     if homework.get('status') not in HOMEWORK_VERDICTS:
         error_message = f'❌ Неизвестный статус домашней работы: {status}'
