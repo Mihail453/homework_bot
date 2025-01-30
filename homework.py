@@ -32,6 +32,7 @@ HOMEWORK_VERDICTS = {
     'rejected': 'Работа проверена: у ревьюера есть замечания.'
 }
 
+bot = TeleBot(TELEGRAM_TOKEN)
 
 def check_tokens():
     """Проверяет доступность переменных окружения."""
@@ -52,7 +53,7 @@ def check_tokens():
     return True
 
 
-def send_message(bot, message):
+def send_message(message):
     """Отправляет сообщение."""
     try:
         bot.send_message(TELEGRAM_CHAT_ID, message)
@@ -63,7 +64,7 @@ def send_message(bot, message):
         return False
 
 
-def get_api_answer(bot, timestamp):
+def get_api_answer(timestamp):
     """Проверяет корректность ответа API."""
     params = {"from_date": timestamp}
     try:
@@ -74,7 +75,7 @@ def get_api_answer(bot, timestamp):
     except requests.RequestException as e:
         error_message = f"❌ Ошибка при запросе к API: {e}"
         logging.error(error_message)
-        send_message(bot, error_message)  # Отправляем ошибку
+        send_message(error_message)  # Отправляем ошибку
         return None
 
 
@@ -94,13 +95,13 @@ def check_response(response):
     return homeworks
 
 
-def parse_status(bot, homework):
+def parse_status(homework):
     """Проверяет корректность статуса."""
     status = homework.get('status')
     if homework.get('status') not in HOMEWORK_VERDICTS:
         error_message = f'❌ Неизвестный статус домашней работы: {status}'
         logging.error(error_message)
-        send_message(bot, error_message)
+        send_message(error_message)
         raise ValueError(
             f'Неожиданное принятое значение: {homework.get("status")}'
         )
@@ -114,23 +115,22 @@ def parse_status(bot, homework):
 
 def main():
     """Основная логика работы бота."""
-    bot = TeleBot(TELEGRAM_TOKEN)
     timestamp = int(time.time())
     last_verdict = None
 
     while True:
         try:
-            response = get_api_answer(bot, timestamp)
+            response = get_api_answer(timestamp)
             homeworks = check_response(response)
 
             if homeworks:
                 first_homework = homeworks[0]
-                verdict = parse_status(bot, first_homework)
+                verdict = parse_status(first_homework)
             else:
                 verdict = 'Нет новых статусов.'
 
             if verdict != last_verdict:  # Если статус изменился
-                if send_message(bot, verdict):  # Отправляем сообщение
+                if send_message(verdict):  # Отправляем сообщение
                     last_verdict = verdict  # Запоминаем отправленный статус
 
             logging.debug(f"🔍 Нет изменений в статусе: {verdict}")
@@ -140,10 +140,10 @@ def main():
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
             logging.error(message)
-            send_message(bot, message)
+            send_message(message)
             print(message)
             if last_verdict != message:
-                send_message(bot, message)
+                send_message(message)
                 last_verdict = message
 
         finally:
