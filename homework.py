@@ -7,11 +7,11 @@ import requests
 
 
 logging.basicConfig(
-    level=logging.DEBUG,  # Уровень логирования (INFO, DEBUG, WARNING, ERROR, CRITICAL)
-    format='%(asctime)s - [%(levelname)s] - %(message)s',  # Формат логов
+    level=logging.DEBUG,
+    format='%(asctime)s - [%(levelname)s] - %(message)s',
     handlers=[
         logging.StreamHandler(),  # Вывод в консоль
-        logging.FileHandler("bot.log", encoding="utf-8")  # Запись в файл bot.log
+        logging.FileHandler("bot.log", encoding="utf-8")
     ]
 )
 
@@ -40,11 +40,13 @@ def check_tokens():
         'TELEGRAM_TOKEN': TELEGRAM_TOKEN,
         'TELEGRAM_CHAT_ID': TELEGRAM_CHAT_ID
     }
-    
+
     missing_tokens = [name for name, value in required_tokens.items() if not value]
-    
+
     if missing_tokens:
-        logging.critical(f"Отсутствуют обязательные переменные окружения: {', '.join(missing_tokens)}")
+        logging.critical(
+            f"Отсутствуют обязательные переменные окружения: {', '.join(
+                missing_tokens)}")
         return False
     return True
 
@@ -69,7 +71,7 @@ def get_api_answer(bot, timestamp):
     except requests.RequestException as e:
         error_message = f"❌ Ошибка при запросе к API: {e}"
         logging.error(error_message)
-        send_message(bot, error_message)  # Отправляем ошибку в Telegram
+        send_message(bot, error_message)  # Отправляем ошибку
         return None
 
 
@@ -77,11 +79,11 @@ def check_response(response):
     if not response:
         logging.error("❌ Пустой ответ API")
         return None
-    
+
     if 'homeworks' not in response:
         logging.error("❌ В ответе API отсутствует ключ 'homeworks'")
         return None
-    
+
     homeworks = response.get('homeworks')
     if not homeworks:
         logging.debug("🔍 В ответе API нет новых статусов")
@@ -100,7 +102,8 @@ def parse_status(bot, homework):
     homework_name = homework.get('homework_name')
     verdict = HOMEWORK_VERDICTS.get(status)
     message = f'Изменился статус проверки работы "{homework_name}". {verdict}'
-    logging.debug(f'🔍 Обнаружен новый статус: {status} для работы "{homework_name}"')
+    logging.debug(
+        f'🔍 Обнаружен новый статус: {status} для работы "{homework_name}"')
     return message
 
 
@@ -108,7 +111,7 @@ def main():
     """Основная логика работы бота."""
     bot = TeleBot(TELEGRAM_TOKEN)
     timestamp = int(time.time())
-    last_verdict = None  # Переменная для хранения последнего отправленного статуса
+    last_verdict = None
 
     while True:
         try:
@@ -127,14 +130,14 @@ def main():
 
             logging.debug(f"🔍 Нет изменений в статусе: {verdict}")
 
-            timestamp = response.get('current_date', timestamp)  # Обновляем timestamp
+            timestamp = response.get('current_date', timestamp)
 
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
             logging.error(message)
             send_message(bot, message)
             print(message)
-            if last_verdict != message:  # Отправляем сообщение об ошибке только 1 раз
+            if last_verdict != message:
                 send_message(bot, message)
                 last_verdict = message
 
@@ -144,5 +147,6 @@ def main():
 
 if __name__ == '__main__':
     if not check_tokens():
-        exit("Программа завершена. Добавьте недостающие переменные окружения.")
+        exit(
+            "Программа завершена. Добавьте недостающие переменные окружения.")
     main()
