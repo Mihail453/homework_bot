@@ -184,9 +184,9 @@ def main():
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
             logging.error(message)
-            if last_verdict != message:
+            if verdict != homeworks_status_dict.get('verdict'):
                 send_message(bot, message)
-                last_verdict = message
+                homeworks_status_dict['verdict'] = verdict
             time.sleep(RETRY_PERIOD)
 
         finally:
