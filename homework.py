@@ -10,6 +10,7 @@ from telebot.apihelper import ApiException
 
 
 def setup_logging():
+    """Настройка логирования для приложения."""
     logging.basicConfig(
         level=logging.DEBUG,
         format='%(asctime)s - [%(levelname)s] - %(message)s',
@@ -18,6 +19,7 @@ def setup_logging():
             logging.FileHandler("bot.log", encoding="utf-8")
         ]
     )
+
 
 load_dotenv()
 
@@ -71,15 +73,16 @@ def send_message(bot, message):
 
     except ApiException as e:  # Ошибки API
         logging.error(f"Ошибка API Telegram: {e}")
-    
+
     except requests.RequestException as e:  # Ошибки сети
         logging.error(f"Ошибка сети при отправке сообщения: {e}")
-    
+
     return False
 
 
 class APIResponseError(Exception):
     """Ошибка некорректного ответа API."""
+
     pass
 
 
@@ -155,7 +158,8 @@ def parse_status(homework):
 def main():
     """Основная логика работы бота."""
     if not check_tokens():
-        logging.error("Остановка программы из-за ошибок в переменных окружения.")
+        text = "Остановка программы из-за ошибок в переменных окружения."
+        logging.error(f"{text}")
         return
 
     bot = TeleBot(TELEGRAM_TOKEN)
