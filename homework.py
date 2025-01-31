@@ -164,7 +164,7 @@ def main():
 
     bot = TeleBot(TELEGRAM_TOKEN)
     timestamp = int(time.time())
-    last_verdict = None
+    homeworks_status_dict = {}
 
     while True:
         try:
@@ -176,14 +176,10 @@ def main():
                 verdict = parse_status(first_homework)
             else:
                 verdict = 'Нет новых статусов.'
-
-            if verdict != last_verdict:  # Если статус изменился
+            if verdict != homeworks_status_dict.get('verdict'):
                 if send_message(bot, verdict):
-                    last_verdict = verdict  # Запоминаем отправленный статус
-            elif verdict == 'Нет новых статусов.':
-                send_message(bot, verdict)
-
-            timestamp = response.get('current_date', timestamp)
+                    homeworks_status_dict['verdict'] = verdict
+                    timestamp = response.get('current_date', timestamp)
 
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
@@ -191,6 +187,7 @@ def main():
             if last_verdict != message:
                 send_message(bot, message)
                 last_verdict = message
+            time.sleep(RETRY_PERIOD)
 
         finally:
             time.sleep(RETRY_PERIOD)
